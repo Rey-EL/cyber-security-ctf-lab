@@ -154,44 +154,110 @@
 
     <script>
         // --- GAME STATE & DATA --- 
-        let currentLevel = 0;
+        let currentLevelIndex = 0;
+        let currentScenarioIndex = 0;
+        let currentStepIndex = 0;
         let score = 0;
         const commandHistory = [];
         let historyIndex = -1;
-        const availableCommands = ['ls', 'cat', 'grep', 'nmap', 'clear', 'help', 'netdiscover']; // Updated
+        const availableCommands = ['ls', 'cat', 'grep', 'nmap', 'clear', 'help', 'netdiscover'];
 
-        const levels = [
+        // Define the entire game structure with levels, scenarios, and steps
+        const gameData = [
             {
-                title: "Level 1: The Hidden File",
-                story: "You've just joined the 'Gemini Cyber Defense Unit' as a Trainee Analyst. Your first task: investigate a recovered server for suspicious activity from a suspected insider threat.",
-                desc: "Find the hidden configuration file left behind.",
-                hint: "Use 'ls -a' to see hidden files.",
-                answer: ".creds.txt",
-                xp: 100
-            },
-            {
-                title: "Level 2: Network Reconnaissance", // Updated Title
-                story: "Good job on Level 1, Trainee Analyst! Your next assignment requires you to map our internal network. We need to identify all active hosts before we can assess their services.", // Updated Story
-                desc: "Perform a network discovery scan to find the target server's IP address. Once you have the IP, you can proceed with a port scan.", // Updated Desc
-                hint: "Use the 'netdiscover' command to scan the network. Then use 'nmap [found_ip]' to find the port.", // Updated Hint
-                answer: "3306", // Answer remains the port of the database service
-                xp: 100
-            },
-            {
-                title: "Level 3: Log Analysis (Brute Force)",
-                story: "Excellent work on the recon! Now, we've detected a series of failed login attempts on one of our web servers.",
-                desc: "Analyze the authentication logs and identify the attacker's source IP address.",
-                hint: "Use 'cat auth.log' or 'grep Failed auth.log'.",
-                answer: "192.168.1.200",
-                xp: 100
-            },
-            {
-                title: "Level 4: Decode the Payload",
-                story: "Critical alert, Analyst! We've quarantined a suspicious Python script from a compromised workstation.",
-                desc: "Analyze the code, identify the obfuscated payload, and extract the variable name holding the malicious string.",
-                hint: "Use 'cat malware.py'. The answer is the variable name holding the suspicious string.",
-                answer: "payload_str",
-                xp: 100
+                levelTitle: "Level 1: Basic Reconnaissance & File Forensics",
+                levelStory: "Welcome, Analyst! Your journey begins with foundational skills in network reconnaissance and file system investigation. The 'Gemini Cyber Defense Unit' needs you to prove your capabilities in understanding basic system vulnerabilities and data recovery.",
+                scenarios: [
+                    {
+                        scenarioTitle: "Scenario 1: Hidden File Discovery",
+                        objective: "A server recovered from a suspected insider threat contains hidden files. Your objective is to find the hidden configuration file left behind.",
+                        hint: "Hidden files in Linux often start with a dot (.). The 'ls' command might have options to reveal them.",
+                        debrief: "Understanding how to reveal hidden files is crucial for forensic analysis and discovering malicious payloads or configuration details. This skill is foundational for further investigations.",
+                        xp: 100,
+                        steps: [
+                            {
+                                type: 'command',
+                                expectedCommand: /^ls\s+-a$/,
+                                successMessage: "You successfully listed all files, including hidden ones. Good job!",
+                                failureMessage: "That command didn't work as expected. Remember, hidden files often start with a dot (.).",
+                                virtualOutput: "notes.txt  .creds.txt  auth.log  malware.py"
+                            }
+                        ],
+                        answer: ".creds.txt" // The flag for this scenario is the filename
+                    },
+                    {
+                        scenarioTitle: "Scenario 2: Network Host Identification",
+                        objective: "Your objective is to perform a network discovery scan to find the target server's IP address.",
+                        hint: "You need a command to scan the network for active hosts. Think network discovery tools like 'netdiscover'.",
+                        debrief: "Network discovery is the first step in understanding a target environment. Identifying live hosts is crucial before you can assess their services and potential vulnerabilities. It's like finding a house before you try to open its doors.",
+                        xp: 100,
+                        steps: [
+                            {
+                                type: 'command',
+                                expectedCommand: /^netdiscover$/,
+                                successMessage: "Network scan completed. You've identified several hosts on the network. Look for the 'Target-Server' IP.",
+                                failureMessage: "The network discovery command did not yield results. Make sure you're using the correct tool.",
+                                virtualOutput: ` Currently scanning: 10.10.5.0/24   |   Screen will be updated every 5 seconds ...
+ 
+ 200 hosts total, 100 hosts active
+ 
+ IP              MAC               Name
+ -----------------------------------------------------------------------------
+ 10.10.5.1       00:50:56:c0:00:08 Router
+ 10.10.5.10      00:1c:23:45:67:89 Workstation-A
+ 10.10.5.50      08:00:27:12:34:56 Target-Server
+ 10.10.5.200     00:0c:29:ab:cd:ef Attacker-VM`
+                            }
+                        ],
+                        answer: "10.10.5.50" // The flag for this scenario is the IP
+                    },
+                    {
+                        scenarioTitle: "Scenario 3: Service Port Identification",
+                        objective: "Now that you've found the target server, your objective is to identify its open services and find the port number of the database service.",
+                        hint: "You need to scan for open ports on the target IP. 'nmap' is the tool for this. Remember to specify the target IP!",
+                        debrief: "Port scanning is vital for vulnerability assessment. Identifying open services helps both attackers and defenders understand the attack surface of a system. Common ports often reveal common services.",
+                        xp: 100,
+                        steps: [
+                            {
+                                type: 'command',
+                                expectedCommand: /^nmap\s+10\.10\.5\.50$/,
+                                successMessage: "Port scan completed successfully. Analyze the output for the database port.",
+                                failureMessage: "The port scan command failed. Ensure you're scanning the correct IP with 'nmap'.",
+                                virtualOutput: `Starting Nmap 7.94 at 2025-11-19...
+Host is up (0.00045s latency).
+Not shown: 997 closed tcp ports (reset)
+PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+3306/tcp open  mysql
+
+Nmap done: 1 IP address (1 host up) scanned in 1.24 seconds`
+                            }
+                        ],
+                        answer: "3306" // The flag for this scenario is the database port
+                    },
+                    {
+                        scenarioTitle: "Scenario 4: Malicious Payload Identification",
+                        objective: "Critical alert! We've quarantined a suspicious Python script from a compromised workstation. Your objective is to analyze the code, identify the obfuscated payload, and extract the variable name holding the malicious string.",
+                        hint: "Use 'cat malware.py'. The answer is the variable name holding the suspicious string, not the string itself.",
+                        debrief: "Identifying malicious code and its components is a core skill in incident response. Knowing where to look (e.g., specific variable names) can accelerate remediation efforts.",
+                        xp: 100,
+                        steps: [
+                            {
+                                type: 'command',
+                                expectedCommand: /^cat\s+malware\.py$/,
+                                successMessage: "You've successfully viewed the contents of malware.py. Now, identify the variable.",
+                                failureMessage: "That command didn't work. Make sure you're using 'cat' on the correct filename.",
+                                virtualOutput: `import os
+# Suspicious script found in /tmp
+def connect():
+    payload_str = "aHR0cDovL2V2aWwuY29t" # This looks suspicious...
+    os.system(payload_str)`
+                            }
+                        ],
+                        answer: "payload_str"
+                    }
+                ]
             }
         ];
 
@@ -227,7 +293,9 @@ def connect():
         function print(text, type = '') {
             const div = document.createElement('div');
             div.className = type;
-            div.textContent = text;
+            // Using innerHTML here for pre-formatted output like netdiscover, but sanitize if from user input
+            // For now, only trusted internal output is passed.
+            div.innerHTML = text; 
             outputDiv.appendChild(div);
             outputDiv.scrollTop = outputDiv.scrollHeight;
         }
@@ -240,41 +308,106 @@ def connect():
             return "Trainee Analyst";
         }
 
-        function updateMission() {
-            if (currentLevel < levels.length) {
-                const level = levels[currentLevel];
-                missionTitle.textContent = level.title;
-                missionNarrative.textContent = level.story; // Display story
-                missionDesc.textContent = level.desc;
-                hintText.textContent = level.hint;
-                hintText.style.display = 'none';
-                hintBtn.textContent = 'Show Hint';
-                hintBtn.style.display = 'inline-block';
-            } else {
+        // --- NEW GAME LOGIC ---
+
+        function getCurrentLevelData() {
+            return gameData[currentLevelIndex];
+        }
+
+        function getCurrentScenarioData() {
+            const level = getCurrentLevelData();
+            return level ? level.scenarios[currentScenarioIndex] : null;
+        }
+
+        function getCurrentStepData() {
+            const scenario = getCurrentScenarioData();
+            return scenario ? scenario.steps[currentStepIndex] : null;
+        }
+
+        // --- NEW GAME LOGIC ---
+
+        function getCurrentLevelData() {
+            return gameData[currentLevelIndex];
+        }
+
+        function getCurrentScenarioData() {
+            const level = getCurrentLevelData();
+            return level ? level.scenarios[currentScenarioIndex] : null;
+        }
+
+        function getCurrentStepData() {
+            const scenario = getCurrentScenarioData();
+            return scenario ? scenario.steps[currentStepIndex] : null;
+        }
+
+        function updateMissionDisplay() {
+            const currentLevel = getCurrentLevelData();
+            const currentScenario = getCurrentScenarioData();
+
+            if (!currentLevel) { // All levels complete
                 missionTitle.textContent = "🎉 TRAINING COMPLETE";
-                missionNarrative.textContent = "You have successfully completed all missions."; // Final story
-                missionDesc.textContent = "You are ready for real-world cyber defense challenges.";
+                missionNarrative.textContent = "You have successfully completed all missions and are a true Cyber Defender!";
+                missionDesc.textContent = "Thank you for playing the Gemini Cyber Range: CTF Edition.";
                 hintBtn.style.display = 'none';
                 hintText.style.display = 'none';
                 document.querySelector('.answer-area').style.display = 'none';
                 missionDesc.style.color = "#00ff41";
+                return;
             }
-            rankDisplay.textContent = getRank(score); // Update rank display
-            scoreDisplay.textContent = score; // Update score display
+
+            if (!currentScenario) { // All scenarios in current level complete
+                print(`✅ Level ${currentLevelIndex + 1} Complete! Advancing to next level...`, "success");
+                currentLevelIndex++;
+                currentScenarioIndex = 0; // Reset scenario index for next level
+                currentStepIndex = 0; // Reset step index for next level
+                updateMissionDisplay(); // Recurse to load next level
+                return;
+            }
+            
+            // Clear terminal for new mission
+            outputDiv.innerHTML = `
+                <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+                <div>Type 'help' for commands. Submit answers in the answer box.</div>
+                <div>---------------------------------------------------------------</div>
+            `;
+
+            missionTitle.textContent = `${currentLevel.levelTitle}`;
+            missionNarrative.textContent = currentLevel.levelStory; // Level story (intro once per level)
+            
+            missionDesc.textContent = currentScenario.objective;
+            hintText.textContent = currentScenario.hint;
+            hintText.style.display = 'none';
+            hintBtn.textContent = 'Show Hint';
+            hintBtn.style.display = 'inline-block';
+
+            rankDisplay.textContent = getRank(score);
+            scoreDisplay.textContent = score;
+
+            print(`\n--- ${currentLevel.levelTitle} - ${currentScenario.scenarioTitle} ---\n`, "info");
+            print(`Objective: ${currentScenario.objective}\n`, "info");
         }
         
         function submitAnswer() {
-            if (currentLevel >= levels.length) return;
+            const currentScenario = getCurrentScenarioData();
+            if (!currentScenario) {
+                print("Error: No active scenario to submit an answer for.", "error");
+                return;
+            }
+            // Ensure all steps are completed before submitting the final answer
+            if (currentStepIndex < currentScenario.steps.length) {
+                print("Please complete all steps for the current scenario before submitting the final answer.", "error");
+                return;
+            }
+
             const userAnswer = answerInput.value.trim();
-            if (userAnswer === levels[currentLevel].answer) {
-                print(`✅ CORRECT! Accessing Level ${currentLevel + 2}...`, "success");
-                score += levels[currentLevel].xp;
-                scoreDisplay.textContent = score;
-                currentLevel++;
+            if (userAnswer === currentScenario.answer) {
+                print(`✅ CORRECT! Scenario ${currentScenario.scenarioTitle} Completed!`, "success");
                 answerInput.value = '';
-                updateMission();
+                currentScenarioIndex++; // Move to next scenario
+                currentStepIndex = 0; // Reset step index for next scenario
+                showDebrief(currentScenario); // Show debrief, which then calls updateMissionDisplay
             } else {
-                print(`❌ Incorrect answer submitted: ${userAnswer}`, "error");
+                print(`❌ Incorrect answer submitted: ${userAnswer}. Try again!`, "error");
                 answerInput.value = '';
             }
         }
@@ -292,83 +425,126 @@ def connect():
             const command = parts[0].toLowerCase();
             const args = parts.slice(1);
 
-            switch (command) {
-                case 'help':
-                    print("Available Commands:");
-                    print("  ls [-a]          List files");
-                    print("  cat [file]       Read file content");
-                    print("  grep [txt] [file] Find text in file");
-                    print("  nmap [ip]        Scan a target IP");
-                    print("  netdiscover      Perform network discovery"); // Updated help
-                    print("  clear            Clear screen");
-                    break;
+            const currentScenario = getCurrentScenarioData();
+            let currentStep = getCurrentStepData(); // Let so it can be null after advancing
 
-                case 'clear':
-                    outputDiv.innerHTML = '';
-                    break;
+            if (!currentScenario) {
+                print("Error: No active scenario.", "error");
+                return;
+            }
+            if (!currentStep) {
+                 print("Error: Current scenario has no steps defined or all steps completed. Submit answer to complete scenario.", "error");
+                 return;
+            }
 
-                case 'ls':
-                    if (args.includes('-a')) {
-                        print("notes.txt  .creds.txt  auth.log  malware.py", "info");
-                    } else {
-                        print("notes.txt  auth.log  malware.py", "info");
+
+            let commandHandledByStep = false;
+            // Validate against the current expected step
+            if (currentStep.type === 'command' && currentStep.expectedCommand) {
+                const regex = new RegExp(currentStep.expectedCommand);
+                if (regex.test(cmd)) {
+                    print(currentStep.successMessage, "success");
+                    if (currentStep.virtualOutput) {
+                        print(currentStep.virtualOutput);
                     }
-                    break;
-
-                case 'cat':
-                    if (args.length === 0) { print("Usage: cat [filename]", "error"); return; }
-                    if (fileSystem[args[0]]) {
-                        print(fileSystem[args[0]]);
-                    } else {
-                        print(`cat: ${args[0]}: No such file`, "error");
+                    currentStepIndex++; // Advance to next step
+                    commandHandledByStep = true;
+                    // Check if scenario is fully stepped through after this
+                    if (currentStepIndex >= currentScenario.steps.length) {
+                        print(`\nAll steps for Scenario ${currentScenario.scenarioTitle} completed. Please submit your final answer in the answer box.`, "info");
                     }
-                    break;
-                
-                case 'grep':
-                    if (args.length < 2) { print("Usage: grep [text] [filename]", "error"); return; }
-                    const search = args[0];
-                    const file = args[1];
-                    if (fileSystem[file]) {
-                        const lines = fileSystem[file].split('\n');
-                        lines.forEach(line => {
-                            if (line.includes(search)) print(line);
-                        });
-                    } else {
-                        print(`grep: ${file}: No such file`, "error");
-                    }
-                    break;
+                } else {
+                    print(currentStep.failureMessage, "error");
+                    commandHandledByStep = true; // Still considered handled, just failed
+                }
+            }
 
-                case 'nmap':
-                    if (args.length === 0) { print("Usage: nmap [ip]", "error"); return; }
-                    print(`Starting Nmap 7.94...`);
-                    setTimeout(() => {
-                        print(`Nmap scan report for ${args[0]}`);
-                        print(`Host is up.`);
-                        print(`PORT     STATE SERVICE`);
-                        print(`22/tcp   open  ssh`);
-                        print(`80/tcp   open  http`);
-                        print(`3306/tcp open  mysql`);
-                        print(`Nmap done.`);
-                    }, 800);
-                    break;
+            // Fallback for general commands or commands not tied to a specific step
+            if (!commandHandledByStep) {
+                switch (command) {
+                    case 'help':
+                        print("Available Commands:");
+                        print("  ls [-a]          List files");
+                        print("  cat [file]       Read file content");
+                        print("  grep [txt] [file] Find text in file");
+                        print("  nmap [ip]        Scan a target IP");
+                        print("  netdiscover      Perform network discovery");
+                        print("  clear            Clear screen");
+                        break;
 
-                case 'netdiscover': // New command case
-                    print(` Currently scanning: 10.10.5.0/24   |   Screen will be updated every 5 seconds ...`);
-                    setTimeout(() => {
-                        print(` `);
-                        print(` 200 hosts total, 100 hosts active`);
-                        print(` `);
-                        print(` IP              MAC               Name`);
-                        print(` -----------------------------------------------------------------------------`);
-                        print(` 10.10.5.1       00:50:56:c0:00:08 Router`);
-                        print(` 10.10.5.10      00:1c:23:45:67:89 Workstation-A`);
-                        print(` 10.10.5.50      08:00:27:12:34:56 Target-Server`);
-                        print(` 10.10.5.200     00:0c:29:ab:cd:ef Attacker-VM`);
-                    }, 1500);
-                    break;
+                    case 'clear':
+                        outputDiv.innerHTML = '';
+                        // Re-print welcome message after clear
+                        print(`
+                            <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+                            <div>Type 'help' for commands. Submit answers in the answer box.</div>
+                            <div>---------------------------------------------------------------</div>
+                        `);
+                        break;
 
-                default:
-                    print(`bash: ${command}: command not found`, "error");
+                    case 'ls':
+                        if (args.includes('-a')) {
+                            print("notes.txt  .creds.txt  auth.log  malware.py", "info");
+                        } else {
+                            print("notes.txt  auth.log  malware.py", "info");
+                        }
+                        break;
+
+                    case 'cat':
+                        if (args.length === 0) { print("Usage: cat [filename]", "error"); return; }
+                        if (fileSystem[args[0]]) {
+                            print(fileSystem[args[0]]);
+                        } else {
+                            print(`cat: ${args[0]}: No such file`, "error");
+                        }
+                        break;
+                    
+                    case 'grep':
+                        if (args.length < 2) { print("Usage: grep [text] [filename]", "error"); return; }
+                        const search = args[0];
+                        const file = args[1];
+                        if (fileSystem[file]) {
+                            const lines = fileSystem[file].split('\n');
+                            lines.forEach(line => {
+                                if (line.includes(search)) print(line);
+                            });
+                        } else {
+                            print(`grep: ${file}: No such file`, "error");
+                        }
+                        break;
+
+                    case 'nmap': // This is a generic nmap output, specific scenarios might override with step.virtualOutput
+                        if (args.length === 0) { print("Usage: nmap [ip]", "error"); return; }
+                        print(`Starting Nmap 7.94...`);
+                        setTimeout(() => {
+                            print(`Nmap scan report for ${args[0]}`);
+                            print(`Host is up.`);
+                            print(`PORT     STATE SERVICE`);
+                            print(`22/tcp   open  ssh`);
+                            print(`80/tcp   open  http`);
+                            print(`3306/tcp open  mysql`);
+                            print(`Nmap done.`);
+                        }, 800);
+                        break;
+
+                    case 'netdiscover': // This is a generic netdiscover output, specific scenarios might override with step.virtualOutput
+                        print(` Currently scanning: 10.10.5.0/24   |   Screen will be updated every 5 seconds ...`);
+                        setTimeout(() => {
+                            print(` `);
+                            print(` 200 hosts total, 100 hosts active`);
+                            print(` `);
+                            print(` IP              MAC               Name`);
+                            print(` -----------------------------------------------------------------------------`);
+                            print(` 10.10.5.1       00:50:56:c0:00:08 Router`);
+                            print(` 10.10.5.10      00:1c:23:45:67:89 Workstation-A`);
+                            print(` 10.10.5.50      08:00:27:12:34:56 Target-Server`);
+                            print(` 10.10.5.200     00:0c:29:ab:cd:ef Attacker-VM`);
+                        }, 1500);
+                        break;
+
+                    default:
+                        print(`bash: ${command}: command not found`, "error");
+                }
             }
         }
 
@@ -415,7 +591,6 @@ def connect():
             }
         });
 
-        // Init
-        updateMission();
+        updateMissionDisplay();
 
     </script>
