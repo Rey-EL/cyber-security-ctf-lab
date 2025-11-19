@@ -73,6 +73,49 @@
         .error { color: #ff5555; }
         .info { color: #79c0ff; }
         .log-entry { color: #a5d6ff; }
+
+        .answer-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2d2d2d;
+            border-radius: 5px;
+            border-left: 4px solid #ffb700;
+        }
+        .answer-area input {
+            width: calc(100% - 100px);
+            background: #121212;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .answer-area button {
+            width: 80px;
+            padding: 8px;
+            background: #2ea44f;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #hint-btn {
+            background: none;
+            border: 1px solid #79c0ff;
+            color: #79c0ff;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        #hint-text {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #000;
+            border: 1px solid #333;
+        }
     </style>
 </head>
 <body>
@@ -82,7 +125,13 @@
         <div id="mission-display" class="mission-box">
             <h3 id="level-title">Level 1: The Hidden File</h3>
             <p id="level-desc">A user reported suspicious files. List all files in the current directory (including hidden ones). Find the hidden file name.</p>
-            <p id="level-hint" class="info"><b>Hint:</b> Use 'ls -a' to see hidden files. Submit the filename (e.g., 'submit .config').</p>
+            <button id="hint-btn">Show Hint</button>
+            <div id="hint-text"></div>
+        </div>
+        <div class="answer-area">
+            <label for="answer-input">Your Answer:</label><br><br>
+            <input type="text" id="answer-input" placeholder="Enter the flag here...">
+            <button id="submit-answer-btn">Submit</button>
         </div>
         <div class="status-bar">
             Current Score: <span id="score">0</span> / 400 XP
@@ -187,7 +236,239 @@ def connect():
             const cmd = cmdRaw.trim();
             if (!cmd) return;
 
-            print(`analyst@workstation:~ $ ${cmd}`, 'log-entry');
+    <script>
+        // --- GAME STATE & DATA --- 
+        let currentLevel = 0;
+        let score = 0;
+        const commandHistory = [];
+        let historyIndex = -1;
+        const availableCommands = ['ls', 'cat', 'grep', 'nmap', 'clear', 'help'];
+
+        const levels = [
+            {
+                title: "Level 1: The Hidden File",
+                desc: "A user reported suspicious files. List all files in the current directory (including hidden ones). Find the hidden file name.",
+                hint: "Use 'ls -a' to see hidden files.",
+                answer: ".creds.txt",
+                xp: 100
+            },
+            {
+                title: "Level 2: Port Scanning",
+                desc: "We need to identify what services the target server (10.10.5.50) is running. Perform a scan.",
+                hint: "Use 'nmap 10.10.5.50' and look for the database service port.",
+                answer: "3306",
+                xp: 100
+            },
+            {
+                title: "Level 3: Log Analysis (Brute Force)",
+                desc: "An attacker tried to guess passwords. Check the 'auth.log' file. Find the IP address that failed multiple times.",
+                hint: "Use 'cat auth.log' or 'grep Failed auth.log'.",
+                answer: "192.168.1.200",
+                xp: 100
+            },
+            {
+                title: "Level 4: Decode the Payload",
+                desc: "We found a suspicious string inside 'malware.py'. Read the file. The string looks like Base64.",
+                hint: "Use 'cat malware.py'. The answer is the variable name holding the suspicious string.",
+                answer: "payload_str",
+                xp: 100
+            }
+        ];
+
+        const fileSystem = {
+            "notes.txt": "Meeting at 10am. Don't forget to patch the server.",
+            ".creds.txt": "admin:SuperSecretPassword! (You found it!)",
+            "auth.log": `Nov 10 12:00:01 server sshd[123]: Accepted password for root from 10.0.0.5 port 22
+Nov 10 12:05:22 server sshd[456]: Failed password for invalid user admin from 192.168.1.200 port 4492
+Nov 10 12:05:24 server sshd[456]: Failed password for invalid user admin from 192.168.1.200 port 4492
+Nov 10 12:05:26 server sshd[456]: Failed password for invalid user admin from 192.168.1.200 port 4492
+Nov 10 12:10:00 server sshd[789]: Connection closed by 192.168.1.200`,
+            "malware.py": `import os
+# Suspicious script found in /tmp
+def connect():
+    payload_str = "aHR0cDovL2V2aWwuY29t" # This looks suspicious...
+    os.system(payload_str)`
+        };
+
+        // --- DOM ELEMENTS ---
+        const outputDiv = document.getElementById('output');
+        const inputField = document.getElementById('cmd-input');
+        const missionTitle = document.getElementById('level-title');
+        const missionDesc = document.getElementById('level-desc');
+        const scoreDisplay = document.getElementById('score');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintText = document.getElementById('hint-text');
+        const answerInput = document.getElementById('answer-input');
+        const submitAnswerBtn = document.getElementById('submit-answer-btn');
+
+        // --- CORE FUNCTIONS ---
+        function print(text, type = '') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = text;
+            outputDiv.appendChild(div);
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        function updateMission() {
+            if (currentLevel < levels.length) {
+                const level = levels[currentLevel];
+                missionTitle.textContent = level.title;
+                missionDesc.textContent = level.desc;
+                hintText.textContent = level.hint;
+                hintText.style.display = 'none';
+                hintBtn.textContent = 'Show Hint';
+                hintBtn.style.display = 'inline-block';
+            } else {
+                missionTitle.textContent = "🎉 TRAINING COMPLETE";
+                missionDesc.textContent = "You have completed all modules. You are ready for real labs.";
+                hintBtn.style.display = 'none';
+                hintText.style.display = 'none';
+                document.querySelector('.answer-area').style.display = 'none';
+                missionDesc.style.color = "#00ff41";
+            }
+        }
+        
+        function submitAnswer() {
+            if (currentLevel >= levels.length) return;
+            const userAnswer = answerInput.value.trim();
+            if (userAnswer === levels[currentLevel].answer) {
+                print(`✅ CORRECT! Accessing Level ${currentLevel + 2}...`, "success");
+                score += levels[currentLevel].xp;
+                scoreDisplay.textContent = score;
+                currentLevel++;
+                answerInput.value = '';
+                updateMission();
+            } else {
+                print(`❌ Incorrect answer submitted: ${userAnswer}`, "error");
+                answerInput.value = '';
+            }
+        }
+
+        function handleCommand(cmdRaw) {
+            const cmd = cmdRaw.trim();
+            if (!cmd) return;
+            
+            commandHistory.unshift(cmd);
+            historyIndex = -1;
+
+            print(`analyst@workstation:~$ ${cmd}`, 'log-entry');
+            
+            const parts = cmd.split(' ');
+            const command = parts[0].toLowerCase();
+            const args = parts.slice(1);
+
+            switch (command) {
+                case 'help':
+                    print("Available Commands:");
+                    print("  ls [-a]          List files");
+                    print("  cat [file]       Read file content");
+                    print("  grep [txt] [file] Find text in file");
+                    print("  nmap [ip]        Scan a target IP");
+                    print("  clear            Clear screen");
+                    break;
+
+                case 'clear':
+                    outputDiv.innerHTML = '';
+                    break;
+
+                case 'ls':
+                    if (args.includes('-a')) {
+                        print("notes.txt  .creds.txt  auth.log  malware.py", "info");
+                    } else {
+                        print("notes.txt  auth.log  malware.py", "info");
+                    }
+                    break;
+
+                case 'cat':
+                    if (args.length === 0) { print("Usage: cat [filename]", "error"); return; }
+                    if (fileSystem[args[0]]) {
+                        print(fileSystem[args[0]]);
+                    } else {
+                        print(`cat: ${args[0]}: No such file`, "error");
+                    }
+                    break;
+                
+                case 'grep':
+                    if (args.length < 2) { print("Usage: grep [text] [filename]", "error"); return; }
+                    const search = args[0];
+                    const file = args[1];
+                    if (fileSystem[file]) {
+                        const lines = fileSystem[file].split('\n');
+                        lines.forEach(line => {
+                            if (line.includes(search)) print(line);
+                        });
+                    } else {
+                        print(`grep: ${file}: No such file`, "error");
+                    }
+                    break;
+
+                case 'nmap':
+                    if (args.length === 0) { print("Usage: nmap [ip]", "error"); return; }
+                    print(`Starting Nmap 7.94...`);
+                    setTimeout(() => {
+                        print(`Nmap scan report for ${args[0]}`);
+                        print(`Host is up.`);
+                        print(`PORT     STATE SERVICE`);
+                        print(`22/tcp   open  ssh`);
+                        print(`80/tcp   open  http`);
+                        print(`3306/tcp open  mysql`);
+                        print(`Nmap done.`);
+                    }, 800);
+                    break;
+
+                default:
+                    print(`bash: ${command}: command not found`, "error");
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        hintBtn.addEventListener('click', () => {
+            const isHidden = hintText.style.display === 'none';
+            hintText.style.display = isHidden ? 'block' : 'none';
+            hintBtn.textContent = isHidden ? 'Hide Hint' : 'Show Hint';
+        });
+        
+        submitAnswerBtn.addEventListener('click', submitAnswer);
+        answerInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleCommand(inputField.value);
+                inputField.value = '';
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    inputField.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    inputField.value = commandHistory[historyIndex];
+                } else {
+                    historyIndex = -1;
+                    inputField.value = '';
+                }
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                const currentInput = inputField.value.trim();
+                const foundCommand = availableCommands.find(c => c.startsWith(currentInput));
+                if (foundCommand) {
+                    inputField.value = foundCommand;
+                }
+            }
+        });
+
+        // Init
+        updateMission();
+
+    </script>
             
             const parts = cmd.split(' ');
             const command = parts[0].toLowerCase();
