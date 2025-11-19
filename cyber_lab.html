@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Cyber Range: CTF Edition</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar for Missions */
+        #mission-panel {
+            width: 30%;
+            background-color: #1e1e1e;
+            border-right: 2px solid #333;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2, h3 { margin-top: 0; color: #00ff41; }
+        .mission-box {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #00ff41;
+            margin-bottom: 20px;
+        }
+        .status-bar {
+            margin-top: auto;
+            padding: 10px;
+            background: #000;
+            border: 1px solid #333;
+            color: #ffb700;
+        }
+
+        /* Main Terminal Area */
+        #terminal-container {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background-color: #0d1117;
+        }
+        #output {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        .input-line { display: flex; align-items: center; }
+        .prompt { color: #2ea44f; font-weight: bold; margin-right: 10px; }
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 16px;
+            flex-grow: 1;
+            outline: none;
+        }
+
+        /* Utility Classes */
+        .success { color: #00ff41; font-weight: bold; }
+        .error { color: #ff5555; }
+        .info { color: #79c0ff; }
+        .log-entry { color: #a5d6ff; }
+    </style>
+</head>
+<body>
+
+    <div id="mission-panel">
+        <h2>🛡️ Cyber Range</h2>
+        <div id="mission-display" class="mission-box">
+            <h3 id="level-title">Level 1: Linux Basics</h3>
+            <p id="level-desc">We have recovered a server from a suspected insider threat. Browse the file system.</p>
+            <p><b>Objective:</b> Find the hidden text file and submit its name.</p>
+            <p class="info">Hint: Hidden files in Linux start with a dot (.). Use 'ls -a'.</p>
+        </div>
+        <div class="status-bar">
+            Current Score: <span id="score">0</span> / 400 XP
+        </div>
+    </div>
+
+    <div id="terminal-container">
+        <div id="output">
+            <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+            <div>Type 'help' for commands. Type 'submit [answer]' to complete a level.</div>
+            <div>---------------------------------------------------------------</div>
+        </div>
+        <div class="input-line">
+            <span class="prompt" id="prompt-text">analyst@workstation:~</span>
+            <input type="text" id="cmd-input" autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        // --- GAME STATE & DATA --- 
+        let currentLevel = 0;
+        let score = 0;
+
+        const levels = [
+            {
+                title: "Level 1: The Hidden File",
+                desc: "A user reported suspicious files. List all files in the current directory (including hidden ones). Find the hidden file name.",
+                hint: "Use 'ls -a' to see hidden files. Submit the filename (e.g., 'submit .config').",
+                answer: ".creds.txt",
+                xp: 100
+            },
+            {
+                title: "Level 2: Port Scanning",
+                desc: "We need to identify what services the target server (10.10.5.50) is running. Perform a scan.",
+                hint: "Use 'nmap 10.10.5.50'. Submit the port number of the database service.",
+                answer: "3306",
+                xp: 100
+            },
+            {
+                title: "Level 3: Log Analysis (Brute Force)",
+                desc: "An attacker tried to guess passwords. Check the 'auth.log' file. Find the IP address that failed multiple times.",
+                hint: "Use 'cat auth.log' or 'grep Failed auth.log'. Submit the attacker's IP.",
+                answer: "192.168.1.200",
+                xp: 100
+            },
+            {
+                title: "Level 4: Decode the Payload",
+                desc: "We found a suspicious string inside 'malware.py'. Read the file. The string looks like Base64.",
+                hint: "Use 'cat malware.py'. In real life, you'd decode it. For now, submit the variable name storing the payload.",
+                answer: "payload_str",
+                xp: 100
+            }
+        ];
+
+        const fileSystem = {
+            "notes.txt": "Meeting at 10am. Don't forget to patch the server.",
+            ".creds.txt": "admin:SuperSecretPassword! (You found it!)",
+            "auth.log": `Nov 10 12:00:01 server sshd[123]: Accepted password for root from 10.0.0.5 port 22
+Nov 10 12:05:22 server sshd[456]: Failed password for invalid user admin from 192.168.1.200 port 4492
+Nov 10 12:05:24 server sshd[456]: Failed password for invalid user admin from 192.168.1.200 port 4492
+Nov 10 12:05:26 server sshd[456]: Failed password for invalid user admin from 192.168.1.200 port 4492
+Nov 10 12:10:00 server sshd[789]: Connection closed by 192.168.1.200`,
+            "malware.py": `import os
+# Suspicious script found in /tmp
+def connect():
+    payload_str = "aHR0cDovL2V2aWwuY29t" # This looks suspicious...
+    os.system(payload_str)`
+        };
+
+        // --- DOM ELEMENTS ---
+        const outputDiv = document.getElementById('output');
+        const inputField = document.getElementById('cmd-input');
+        const missionTitle = document.getElementById('level-title');
+        const missionDesc = document.getElementById('level-desc');
+        const scoreDisplay = document.getElementById('score');
+
+        // --- CORE FUNCTIONS ---
+
+        function print(text, type = '') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = text;
+            outputDiv.appendChild(div);
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        function updateMission() {
+            if (currentLevel < levels.length) {
+                const level = levels[currentLevel];
+                missionTitle.textContent = level.title;
+                missionDesc.innerHTML = `${level.desc}<br><br><b>Hint:</b> ${level.hint}`;
+            } else {
+                missionTitle.textContent = "🎉 TRAINING COMPLETE";
+                missionDesc.innerHTML = "You have completed all modules. You are ready for real labs.";
+                missionDesc.style.color = "#00ff41";
+            }
+        }
+
+        function handleCommand(cmdRaw) {
+            const cmd = cmdRaw.trim();
+            if (!cmd) return;
+
+            print(`analyst@workstation:~ $ ${cmd}`, 'log-entry');
+            
+            const parts = cmd.split(' ');
+            const command = parts[0].toLowerCase();
+            const args = parts.slice(1);
+
+            switch (command) {
+                case 'help':
+                    print("Available Commands:");
+                    print("  ls [-a]          List files");
+                    print("  cat [file]       Read file content");
+                    print("  grep [txt] [file] Find text in file");
+                    print("  nmap [ip]        Scan a target IP");
+                    print("  submit [answer]  Submit answer to complete level");
+                    print("  clear            Clear screen");
+                    break;
+
+                case 'clear':
+                    outputDiv.innerHTML = '';
+                    break;
+
+                case 'ls':
+                    if (args.includes('-a')) {
+                        print("notes.txt  .creds.txt  auth.log  malware.py", "info");
+                    } else {
+                        print("notes.txt  auth.log  malware.py", "info");
+                    }
+                    break;
+
+                case 'cat':
+                    if (args.length === 0) { print("Usage: cat [filename]", "error"); return; }
+                    if (fileSystem[args[0]]) {
+                        print(fileSystem[args[0]]);
+                    } else {
+                        print(`cat: ${args[0]}: No such file`, "error");
+                    }
+                    break;
+                
+                case 'grep':
+                    // Simplified grep
+                    if (args.length < 2) { print("Usage: grep [text] [filename]", "error"); return; }
+                    const search = args[0];
+                    const file = args[1];
+                    if (fileSystem[file]) {
+                        const lines = fileSystem[file].split('\n');
+                        lines.forEach(line => {
+                            if (line.includes(search)) print(line);
+                        });
+                    } else {
+                        print(`grep: ${file}: No such file`, "error");
+                    }
+                    break;
+
+                case 'nmap':
+                    if (args.length === 0) { print("Usage: nmap [ip]", "error"); return; }
+                    print(`Starting Nmap 7.94...`);
+                    setTimeout(() => {
+                        print(`Nmap scan report for ${args[0]}`);
+                        print(`Host is up.`);
+                        print(`PORT     STATE SERVICE`);
+                        print(`22/tcp   open  ssh`);
+                        print(`80/tcp   open  http`);
+                        print(`3306/tcp open  mysql`);
+                        print(`Nmap done.`);
+                    }, 800);
+                    break;
+
+                case 'submit':
+                    if (currentLevel >= levels.length) return;
+                    const answer = args[0];
+                    if (answer === levels[currentLevel].answer) {
+                        print(`✅ CORRECT! Accessing Level ${currentLevel + 2}...`, "success");
+                        score += levels[currentLevel].xp;
+                        scoreDisplay.textContent = score;
+                        currentLevel++;
+                        updateMission();
+                    } else {
+                        print("❌ Incorrect. Try again. Check the hint.", "error");
+                    }
+                    break;
+
+                default:
+                    print(`bash: ${command}: command not found`, "error");
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleCommand(inputField.value);
+                inputField.value = '';
+            }
+        });
+
+        // Init
+        updateMission();
+
+    </script>
+</body>
+</html>
