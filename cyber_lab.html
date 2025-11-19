@@ -80,10 +80,9 @@
     <div id="mission-panel">
         <h2>🛡️ Cyber Range</h2>
         <div id="mission-display" class="mission-box">
-            <h3 id="level-title">Level 1: Linux Basics</h3>
-            <p id="level-desc">We have recovered a server from a suspected insider threat. Browse the file system.</p>
-            <p><b>Objective:</b> Find the hidden text file and submit its name.</p>
-            <p class="info">Hint: Hidden files in Linux start with a dot (.). Use 'ls -a'.</p>
+            <h3 id="level-title">Level 1: The Hidden File</h3>
+            <p id="level-desc">A user reported suspicious files. List all files in the current directory (including hidden ones). Find the hidden file name.</p>
+            <p id="level-hint" class="info"><b>Hint:</b> Use 'ls -a' to see hidden files. Submit the filename (e.g., 'submit .config').</p>
         </div>
         <div class="status-bar">
             Current Score: <span id="score">0</span> / 400 XP
@@ -174,10 +173,12 @@ def connect():
             if (currentLevel < levels.length) {
                 const level = levels[currentLevel];
                 missionTitle.textContent = level.title;
-                missionDesc.innerHTML = `${level.desc}<br><br><b>Hint:</b> ${level.hint}`;
+                missionDesc.textContent = level.desc;
+                document.getElementById('level-hint').innerHTML = `<b>Hint:</b> ${level.hint}`;
             } else {
                 missionTitle.textContent = "🎉 TRAINING COMPLETE";
-                missionDesc.innerHTML = "You have completed all modules. You are ready for real labs.";
+                missionDesc.textContent = "You have completed all modules. You are ready for real labs.";
+                document.getElementById('level-hint').innerHTML = "";
                 missionDesc.style.color = "#00ff41";
             }
         }
