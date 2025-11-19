@@ -124,6 +124,7 @@
         <h2>🛡️ Cyber Range</h2>
         <div id="mission-display" class="mission-box">
             <h3 id="level-title">Level 1: The Hidden File</h3>
+            <p id="mission-narrative" class="info"></p>
             <p id="level-desc">A user reported suspicious files. List all files in the current directory (including hidden ones). Find the hidden file name.</p>
             <button id="hint-btn">Show Hint</button>
             <div id="hint-text"></div>
@@ -134,6 +135,7 @@
             <button id="submit-answer-btn">Submit</button>
         </div>
         <div class="status-bar">
+            Current Rank: <span id="rank-display">Trainee Analyst</span><br>
             Current Score: <span id="score">0</span> / 400 XP
         </div>
     </div>
@@ -161,28 +163,32 @@
         const levels = [
             {
                 title: "Level 1: The Hidden File",
-                desc: "A user reported suspicious files. List all files in the current directory (including hidden ones). Find the hidden file name.",
+                story: "You've just joined the 'Gemini Cyber Defense Unit' as a Trainee Analyst. Your first task: investigate a recovered server for suspicious activity from a suspected insider threat.",
+                desc: "Find the hidden configuration file left behind.",
                 hint: "Use 'ls -a' to see hidden files.",
                 answer: ".creds.txt",
                 xp: 100
             },
             {
                 title: "Level 2: Port Scanning",
-                desc: "We need to identify what services the target server (10.10.5.50) is running. Perform a scan.",
+                story: "Good job on Level 1, Trainee Analyst! Your next assignment involves reconnaissance.",
+                desc: "A new target server has been provisioned, and we need to identify its open services to assess potential vulnerabilities.",
                 hint: "Use 'nmap 10.10.5.50' and look for the database service port.",
                 answer: "3306",
                 xp: 100
             },
             {
                 title: "Level 3: Log Analysis (Brute Force)",
-                desc: "An attacker tried to guess passwords. Check the 'auth.log' file. Find the IP address that failed multiple times.",
+                story: "Excellent work on the recon! Now, we've detected a series of failed login attempts on one of our web servers.",
+                desc: "Analyze the authentication logs and identify the attacker's source IP address.",
                 hint: "Use 'cat auth.log' or 'grep Failed auth.log'.",
                 answer: "192.168.1.200",
                 xp: 100
             },
             {
                 title: "Level 4: Decode the Payload",
-                desc: "We found a suspicious string inside 'malware.py'. Read the file. The string looks like Base64.",
+                story: "Critical alert, Analyst! We've quarantined a suspicious Python script from a compromised workstation.",
+                desc: "Analyze the code, identify the obfuscated payload, and extract the variable name holding the malicious string.",
                 hint: "Use 'cat malware.py'. The answer is the variable name holding the suspicious string.",
                 answer: "payload_str",
                 xp: 100
@@ -208,8 +214,10 @@ def connect():
         const outputDiv = document.getElementById('output');
         const inputField = document.getElementById('cmd-input');
         const missionTitle = document.getElementById('level-title');
+        const missionNarrative = document.getElementById('mission-narrative'); // New
         const missionDesc = document.getElementById('level-desc');
         const scoreDisplay = document.getElementById('score');
+        const rankDisplay = document.getElementById('rank-display'); // New
         const hintBtn = document.getElementById('hint-btn');
         const hintText = document.getElementById('hint-text');
         const answerInput = document.getElementById('answer-input');
@@ -224,10 +232,19 @@ def connect():
             outputDiv.scrollTop = outputDiv.scrollHeight;
         }
 
+        function getRank(currentScore) {
+            if (currentScore >= 400) return "Senior Cyber Analyst";
+            if (currentScore >= 300) return "Cyber Analyst";
+            if (currentScore >= 200) return "Associate Analyst";
+            if (currentScore >= 100) return "Junior Analyst";
+            return "Trainee Analyst";
+        }
+
         function updateMission() {
             if (currentLevel < levels.length) {
                 const level = levels[currentLevel];
                 missionTitle.textContent = level.title;
+                missionNarrative.textContent = level.story; // Display story
                 missionDesc.textContent = level.desc;
                 hintText.textContent = level.hint;
                 hintText.style.display = 'none';
@@ -235,12 +252,15 @@ def connect():
                 hintBtn.style.display = 'inline-block';
             } else {
                 missionTitle.textContent = "🎉 TRAINING COMPLETE";
-                missionDesc.textContent = "You have completed all modules. You are ready for real labs.";
+                missionNarrative.textContent = "You have successfully completed all missions."; // Final story
+                missionDesc.textContent = "You are ready for real-world cyber defense challenges.";
                 hintBtn.style.display = 'none';
                 hintText.style.display = 'none';
                 document.querySelector('.answer-area').style.display = 'none';
                 missionDesc.style.color = "#00ff41";
             }
+            rankDisplay.textContent = getRank(score); // Update rank display
+            scoreDisplay.textContent = score; // Update score display
         }
         
         function submitAnswer() {
