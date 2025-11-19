@@ -158,7 +158,7 @@
         let score = 0;
         const commandHistory = [];
         let historyIndex = -1;
-        const availableCommands = ['ls', 'cat', 'grep', 'nmap', 'clear', 'help'];
+        const availableCommands = ['ls', 'cat', 'grep', 'nmap', 'clear', 'help', 'netdiscover']; // Updated
 
         const levels = [
             {
@@ -170,11 +170,11 @@
                 xp: 100
             },
             {
-                title: "Level 2: Port Scanning",
-                story: "Good job on Level 1, Trainee Analyst! Your next assignment involves reconnaissance.",
-                desc: "A new target server has been provisioned, and we need to identify its open services to assess potential vulnerabilities.",
-                hint: "Use 'nmap 10.10.5.50' and look for the database service port.",
-                answer: "3306",
+                title: "Level 2: Network Reconnaissance", // Updated Title
+                story: "Good job on Level 1, Trainee Analyst! Your next assignment requires you to map our internal network. We need to identify all active hosts before we can assess their services.", // Updated Story
+                desc: "Perform a network discovery scan to find the target server's IP address. Once you have the IP, you can proceed with a port scan.", // Updated Desc
+                hint: "Use the 'netdiscover' command to scan the network. Then use 'nmap [found_ip]' to find the port.", // Updated Hint
+                answer: "3306", // Answer remains the port of the database service
                 xp: 100
             },
             {
@@ -299,6 +299,7 @@ def connect():
                     print("  cat [file]       Read file content");
                     print("  grep [txt] [file] Find text in file");
                     print("  nmap [ip]        Scan a target IP");
+                    print("  netdiscover      Perform network discovery"); // Updated help
                     print("  clear            Clear screen");
                     break;
 
@@ -349,6 +350,21 @@ def connect():
                         print(`3306/tcp open  mysql`);
                         print(`Nmap done.`);
                     }, 800);
+                    break;
+
+                case 'netdiscover': // New command case
+                    print(` Currently scanning: 10.10.5.0/24   |   Screen will be updated every 5 seconds ...`);
+                    setTimeout(() => {
+                        print(` `);
+                        print(` 200 hosts total, 100 hosts active`);
+                        print(` `);
+                        print(` IP              MAC               Name`);
+                        print(` -----------------------------------------------------------------------------`);
+                        print(` 10.10.5.1       00:50:56:c0:00:08 Router`);
+                        print(` 10.10.5.10      00:1c:23:45:67:89 Workstation-A`);
+                        print(` 10.10.5.50      08:00:27:12:34:56 Target-Server`);
+                        print(` 10.10.5.200     00:0c:29:ab:cd:ef Attacker-VM`);
+                    }, 1500);
                     break;
 
                 default:
@@ -403,5 +419,3 @@ def connect():
         updateMission();
 
     </script>
-</body>
-</html>
