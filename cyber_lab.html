@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Cyber Range: CTF Edition</title>
+    <title>Cyber Range: CTF Edition</title>
     <style>
         body {
             background-color: #121212;
@@ -347,7 +347,7 @@ def connect():
             if (!currentLevel) { // All levels complete
                 missionTitle.textContent = "🎉 TRAINING COMPLETE";
                 missionNarrative.textContent = "You have successfully completed all missions and are a true Cyber Defender!";
-                missionDesc.textContent = "Thank you for playing the Gemini Cyber Range: CTF Edition.";
+                missionDesc.textContent = "Thank you for playing the Cyber Range: CTF Edition.";
                 hintBtn.style.display = 'none';
                 hintText.style.display = 'none';
                 document.querySelector('.answer-area').style.display = 'none';
@@ -366,7 +366,7 @@ def connect():
             
             // Clear terminal for new mission
             outputDiv.innerHTML = `
-                <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+                <div>Welcome to the Cyber Defense Simulator</div>
                 <div>Type 'help' for commands. Submit answers in the answer box.</div>
                 <div>---------------------------------------------------------------</div>
             `;
@@ -476,7 +476,7 @@ def connect():
                         outputDiv.innerHTML = '';
                         // Re-print welcome message after clear
                         print(`
-                            <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+                            <div>Welcome to the Cyber Defense Simulator</div>
                             <div>Type 'help' for commands. Submit answers in the answer box.</div>
                             <div>---------------------------------------------------------------</div>
                         `);
