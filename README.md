@@ -11,6 +11,23 @@ This project is a web-based, interactive terminal simulator for learning basic c
 - **Collapsible Hints:** Hints are hidden by default and can be revealed with a click.
 - **Safe Environment:** All commands are simulated, so it's completely safe to use and practice.
 
+---
+
+## Summary of Skills Demonstrated
+
+*   **Web Development:** Proficiency in HTML, CSS, and JavaScript to create a dynamic, single-page web application.
+*   **UI/UX Design:** Designing an intuitive and engaging user interface for an educational tool, including interactive elements, clear instructions, and a gamified progression system.
+*   **JavaScript Logic:** Implementing the core logic for the simulated terminal, command processing, challenge validation, and interactive hints.
+*   **Educational Content Creation:** Developing structured, narrative-driven Capture The Flag (CTF) challenges to teach fundamental cybersecurity concepts and terminal commands.
+
+---
+
+## Security Context
+
+This project provides a safe, sandboxed environment where aspiring cybersecurity professionals can learn and practice fundamental skills without any risk. By simulating a terminal and creating CTF challenges based on real-world scenarios, it helps users develop the foundational knowledge needed to identify and respond to security incidents. It is an educational tool designed to build the practical skills required to address vulnerabilities like those in the OWASP Top 10 in a controlled setting.
+
+---
+
 ## How to Use
 
 1.  Open the `cyber_lab.html` file in your web browser.
