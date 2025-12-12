@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Cyber Range: CTF Edition</title>
+    <title>Cyber Range: CTF Edition</title>
     <style>
         body {
             background-color: #121212;
@@ -142,7 +142,7 @@
 
     <div id="terminal-container">
         <div id="output">
-            <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+            <div>Welcome to the Cyber Defense Simulator</div>
             <div>Type 'help' for commands. Submit answers in the answer box.</div>
             <div>---------------------------------------------------------------</div>
         </div>
@@ -166,7 +166,7 @@
         const gameData = [
             {
                 levelTitle: "Level 1: Basic Reconnaissance & File Forensics",
-                levelStory: "Welcome, Analyst! Your journey begins with foundational skills in network reconnaissance and file system investigation. The 'Gemini Cyber Defense Unit' needs you to prove your capabilities in understanding basic system vulnerabilities and data recovery.",
+                levelStory: "Welcome, Analyst! Your journey begins with foundational skills in network reconnaissance and file system investigation. The 'Cyber Defense Unit' needs you to prove your capabilities in understanding basic system vulnerabilities and data recovery.",
                 scenarios: [
                     {
                         scenarioTitle: "Scenario 1: Hidden File Discovery",
@@ -347,7 +347,7 @@ def connect():
             if (!currentLevel) { // All levels complete
                 missionTitle.textContent = "🎉 TRAINING COMPLETE";
                 missionNarrative.textContent = "You have successfully completed all missions and are a true Cyber Defender!";
-                missionDesc.textContent = "Thank you for playing the Gemini Cyber Range: CTF Edition.";
+                missionDesc.textContent = "Thank you for playing the Cyber Range: CTF Edition.";
                 hintBtn.style.display = 'none';
                 hintText.style.display = 'none';
                 document.querySelector('.answer-area').style.display = 'none';
@@ -366,7 +366,7 @@ def connect():
             
             // Clear terminal for new mission
             outputDiv.innerHTML = `
-                <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+                <div>Welcome to the Cyber Defense Simulator</div>
                 <div>Type 'help' for commands. Submit answers in the answer box.</div>
                 <div>---------------------------------------------------------------</div>
             `;
@@ -476,7 +476,7 @@ def connect():
                         outputDiv.innerHTML = '';
                         // Re-print welcome message after clear
                         print(`
-                            <div>Welcome to the Gemini Cyber Defense Simulator v2.0</div>
+                            <div>Welcome to the Cyber Defense Simulator</div>
                             <div>Type 'help' for commands. Submit answers in the answer box.</div>
                             <div>---------------------------------------------------------------</div>
                         `);
