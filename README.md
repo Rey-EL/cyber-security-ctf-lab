@@ -1,62 +1,35 @@
 # Cyber Security CTF Lab
 
-This project is a web-based, interactive terminal simulator for learning basic cybersecurity concepts. It's a single HTML file that creates a "Capture The Flag" (CTF) style learning environment in your browser.
+I built a Capture The Flag game that runs as a single HTML file in the browser. It simulates a Linux terminal where you work through security challenges, find flags, and rank up as an analyst.
 
-## Features
+## How to play
 
-- **Zero Installation:** Runs entirely in your web browser. No need to install VMs or other software.
-- **Interactive Terminal:** A simulated Linux terminal to practice commands, complete with command history and autocomplete.
-- **CTF Challenges:** Multiple levels of challenges that mirror real-world security analyst tasks, featuring an enhanced narrative and progression system with Analyst Ranks.
-- **Dedicated Answer Area:** Submit flags in a separate input field for a clearer CTF experience.
-- **Collapsible Hints:** Hints are hidden by default and can be revealed with a click.
-- **Safe Environment:** All commands are simulated, so it's completely safe to use and practice.
+1. Open `cyber_lab.html` in any web browser. Nothing to install.
+2. Read the mission briefing on the left side of the screen.
+3. Use the terminal on the right to run commands and hunt for information.
+4. When you find a flag, type it into the answer box and submit to clear the level.
 
----
+## What is in it
 
-## Summary of Skills Demonstrated
+- A simulated Linux terminal with command history and autocomplete.
+- Multiple challenge levels based on tasks a real security analyst does.
+- An analyst rank system that tracks your progress.
+- Hints hidden behind a click, so you only see them when you want them.
+- Everything runs locally. No VMs, no setup, no risk.
 
-*   **Web Development:** Proficiency in HTML, CSS, and JavaScript to create a dynamic, single-page web application.
-*   **UI/UX Design:** Designing an intuitive and engaging user interface for an educational tool, including interactive elements, clear instructions, and a gamified progression system.
-*   **JavaScript Logic:** Implementing the core logic for the simulated terminal, command processing, challenge validation, and interactive hints.
-*   **Educational Content Creation:** Developing structured, narrative-driven Capture The Flag (CTF) challenges to teach fundamental cybersecurity concepts and terminal commands.
+## Why I built it
 
----
+I wanted a way to practice terminal skills and security thinking without spinning up a lab environment. One file, open it, play. It is also a good example of what I can do with plain HTML, CSS, and JavaScript.
 
-## Security Context
+## Hosting it
 
-This project provides a safe, sandboxed environment where aspiring cybersecurity professionals can learn and practice fundamental skills without any risk. By simulating a terminal and creating CTF challenges based on real-world scenarios, it helps users develop the foundational knowledge needed to identify and respond to security incidents. It is an educational tool designed to build the practical skills required to address vulnerabilities like those in the OWASP Top 10 in a controlled setting.
+The lab works from a file, but you can put it on GitHub Pages if you want a public link:
 
----
-
-## How to Use
-
-1.  Open the `cyber_lab.html` file in your web browser.
-2.  Follow the "Mission Briefing" and narrative on the left side of the screen.
-3.  Use the terminal on the right to enter commands and find information relevant to the challenge.
-4.  When you find an answer (flag), type it into the "Your Answer:" box and click "Submit" to complete the level.
-
-## Deployment
-
-This project can be easily deployed to GitHub Pages to make it accessible via a public URL.
-
-1.  Ensure the `cyber_lab.html` file is in the root of your repository.
-2.  In your repository's settings, navigate to the "Pages" section.
-3.  Under "Build and deployment", select `Deploy from a branch`.
-4.  For "Branch", select `main` (or your primary branch) and choose the `/(root)` folder.
-5.  Click "Save".
-6.  Your lab will be live at `https://<your-username>.github.io/<your-repository-name>/cyber_lab.html`.
+1. Keep `cyber_lab.html` in the root of the repo.
+2. Go to the repo Settings, then Pages.
+3. Set source to Deploy from a branch, pick `main`, folder `/ (root)`, and save.
+4. It will be live at `https://<your-username>.github.io/<repo-name>/cyber_lab.html`.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
-## Contributing
-
-Contributions are welcome! If you have suggestions for new features, bug fixes, or additional CTF levels, please feel free to:
-
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'feat: Add amazing feature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
-
+MIT License. See [LICENSE.md](LICENSE.md) for details.
